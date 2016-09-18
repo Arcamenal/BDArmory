@@ -60,3 +60,4 @@ D:\KSP\Mods\PJS\Git\Source\BDArmory\BahaTurret\bin\Debug\Mono.Cecil.dll
 D:\KSP\Mods\PJS\Git\Source\BDArmory\BahaTurret\bin\Debug\TDx.TDxInput.dll
 D:\KSP\Mods\PJS\Git\Source\BDArmory\BahaTurret\bin\Debug\Mono.Security.dll
 D:\KSP\Mods\PJS\Git\Source\BDArmory\BahaTurret\bin\Debug\UnityEngine.xml
+D:\KSP\Mods\PJS\Git\Source\BDArmory\BahaTurret\bin\Debug\StringFormatter.dll

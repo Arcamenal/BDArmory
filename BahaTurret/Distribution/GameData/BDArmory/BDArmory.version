@@ -1,0 +1,21 @@
+{
+  "NAME": "BDArmory",
+  "URL":"http://ksp-avc.cybutek.net/version.php?id=351",
+  "DOWNLOAD": "https://github.com/PapaJoesSoup/BDArmory/releases/tag/v0.11.1.3Beta",
+  "VERSION": {
+    "MAJOR": 0, 
+    "MINOR": 11,
+    "PATCH": 1,
+    "BUILD": 3
+  },
+  "KSP_VERSION": {
+    "MAJOR": 1,
+    "MINOR": 2,
+    "PATCH": 0
+  },
+  "KSP_VERSION_MIN": {
+    "MAJOR": 1,
+    "MINOR": 2,
+    "PATCH": 0
+  }
+}

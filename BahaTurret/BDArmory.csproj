@@ -146,6 +146,7 @@
     <None Include="Distribution\GameData\BDArmory\AssetBundles\bdagrayscaleshader.ksp" />
     <None Include="Distribution\GameData\BDArmory\AssetBundles\bdaunlitblack.ksp" />
     <None Include="Distribution\GameData\BDArmory\ATM_BDArmory.cfg" />
+    <None Include="Distribution\GameData\BDArmory\BDArmory.version" />
     <None Include="Distribution\GameData\BDArmory\gpsTargets.cfg" />
     <None Include="Distribution\GameData\BDArmory\Models\bulletHit\bulletHit.mu" />
     <None Include="Distribution\GameData\BDArmory\Models\CMChaff\model.mu" />

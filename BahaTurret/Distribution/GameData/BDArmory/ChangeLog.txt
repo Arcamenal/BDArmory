@@ -4,7 +4,7 @@ v0.11.1.3beta
 - Fix reload sounds on M1Abrams and M102 parts.  Git Issue #39
 - Fix missing weapon icon in staging part list.
 - Fix missing reload bar next to icon.
-- Fix missing heat guage next to icon.
+- Fix missing heat gauge next to icon.
 
 v0.11.1.2
 - Fix sound issue with Hydra 70.  Git Issue #1
@@ -30,7 +30,7 @@ v0.11.0
 - Fix incorrect tracer width in far camera with Scatterer
 - Fix short bursts when firing in barrage with trigger armed
 - Fix barrage on multi-barrel weapons
-- Fix particle emission force being ovewritten in explosions
+- Fix particle emission force being overwritten in explosions
 - Fix possible error on airborne guard with no AI pilot
 
 
