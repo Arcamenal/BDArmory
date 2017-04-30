@@ -22,7 +22,9 @@ namespace BahaTurret
             pEmitters = gameObject.GetComponentsInChildren<KSPParticleEmitter>();
             foreach (KSPParticleEmitter pe in pEmitters)
             {
+                EffectBehaviour.AddParticleEmitter(pe);
                 pe.emit = true;
+               
 
                 //if(pe.useWorldSpace) pe.force = (4.49f * FlightGlobals.getGeeForceAtPosition(transform.position));
 
@@ -51,6 +53,7 @@ namespace BahaTurret
                 foreach (KSPParticleEmitter pe in pEmitters)
                 {
                     pe.emit = false;
+                    EffectBehaviour.RemoveParticleEmitter(pe);
                 }
             }
 
@@ -89,7 +92,9 @@ namespace BahaTurret
             }
             foreach (KSPParticleEmitter pe in newExplosion.GetComponentsInChildren<KSPParticleEmitter>())
             {
+                EffectBehaviour.AddParticleEmitter(pe);
                 pe.emit = true;
+                
             }
 
             DoExplosionDamage(position, power, heat, radius, sourceVessel);
@@ -176,7 +181,7 @@ namespace BahaTurret
 
 		    var vesselsAffected =
 		        BDATargetManager.LoadedVessels.Where(
-		            v => v != null && v.loaded && !v.packed && (v.transform.position - position).magnitude < maxDistance*4);
+		            v => v != null && v.loaded && !v.packed && (v.CoM - position).magnitude < maxDistance*4);
 
 		    var partsAffected =
 		        vesselsAffected.SelectMany(v => v.parts).Where(p => p!=null && p && (p.transform.position - position).magnitude < maxDistance);

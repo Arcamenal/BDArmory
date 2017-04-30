@@ -73,10 +73,6 @@ namespace BahaTurret
                   UI_FloatRange(minValue = 0f, maxValue = 10f, stepIncrement = 0.5f, scene = UI_Scene.Editor)]
         public float decoupleSpeed = 0;
 
-        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Detonation Radius"),
-          UI_FloatRange(minValue = 0f, maxValue = 10f, stepIncrement = 0.5f, scene = UI_Scene.All)]
-        public float detonationRadius = 0;
-
         [KSPField]
 		public float optimumAirspeed = 220;
 		
@@ -274,7 +270,9 @@ namespace BahaTurret
         
 		public override void OnStart(StartState state)
 		{
-			ParseWeaponClass();
+
+            //base.OnStart(state);
+            ParseWeaponClass();
 
 			if(shortName == string.Empty)
 			{
@@ -309,7 +307,8 @@ namespace BahaTurret
 			foreach(var emitter in part.FindModelComponents<KSPParticleEmitter>())
 			{
 				emitter.emit = false;
-			}
+                EffectBehaviour.RemoveParticleEmitter(emitter);
+            }
 
 			if(HighLogic.LoadedSceneIsFlight)
 			{
@@ -328,7 +327,8 @@ namespace BahaTurret
 						foreach(var emitter in exhaustPrefab.GetComponentsInChildren<KSPParticleEmitter>())
 						{
 							emitter.emit = false;
-						}
+                            EffectBehaviour.RemoveParticleEmitter(emitter);
+                        }
 						exhaustPrefab.transform.parent = t;
 						exhaustPrefab.transform.localPosition = Vector3.zero;
 						exhaustPrefab.transform.localRotation = Quaternion.identity;
@@ -344,7 +344,8 @@ namespace BahaTurret
 						foreach(var emitter in exhaustPrefab.GetComponentsInChildren<KSPParticleEmitter>())
 						{
 							emitter.emit = false;
-						}
+                            EffectBehaviour.RemoveParticleEmitter(emitter);
+                        }
 						exhaustPrefab.transform.parent = t;
 						exhaustPrefab.transform.localPosition = Vector3.zero;
 						exhaustPrefab.transform.localRotation = Quaternion.identity;
@@ -587,7 +588,6 @@ namespace BahaTurret
 				part.Unpack();
 				vessel.situation = Vessel.Situations.FLYING;
 				part.rb.isKinematic = false;
-				BDArmorySettings.Instance.ApplyNewVesselRanges(vessel);
 				part.bodyLiftMultiplier = 0;
 				part.dragModel = Part.DragModel.NONE;
 
@@ -658,11 +658,12 @@ namespace BahaTurret
 		
 		public override void OnFixedUpdate()
 		{
-            base.OnFixedUpdate();
             debugString = "";
 			if(HasFired && !HasExploded && part!=null)
 			{
-				part.rb.isKinematic = false;
+                CheckDetonationDistance();
+
+                part.rb.isKinematic = false;
 				AntiSpin();
 
 				//simpleDrag
@@ -725,14 +726,6 @@ namespace BahaTurret
 				}
 			}
 		}
-
-	    public void  LateUpdate()
-	    {
-            if (detonationRadius > 0)
-            {
-                CheckDetonationDistance(detonationRadius);
-            }
-        }
 
 	    Vector3 previousPos;
 		void RaycastCollisions()
@@ -800,7 +793,7 @@ namespace BahaTurret
                     if (sqrDist < Mathf.Pow(GetBlastRadius() * 0.5f, 2)) part.temperature = part.maxTemp + 100;
 
                     isTimed = true;
-                    detonationTime = Time.time - TimeFired + 1.5f;
+                    detonationTime = TimeIndex + 1.5f;
                     return;
                 }
             }
@@ -835,8 +828,7 @@ namespace BahaTurret
 				{
 					UpdateAntiRadiationTarget();
 				}
-
-			}
+            }
 
 			if(MissileState != MissileStates.Idle && MissileState != MissileStates.Drop) //guidance
 			{
@@ -897,7 +889,7 @@ namespace BahaTurret
 
 					finalMaxTorque = Mathf.Clamp((TimeIndex-dropTime)*torqueRampUp, 0, maxTorque); //ramp up torque
 
-					if(GuidanceMode == GuidanceModes.AAMLead)
+                    if (GuidanceMode == GuidanceModes.AAMLead)
 					{
 						AAMGuidance();
 					}
@@ -921,9 +913,7 @@ namespace BahaTurret
 					{
 						CruiseGuidance();
 					}
-
-
-				}
+                }
 				else
 				{
 					CheckMiss();
@@ -1011,14 +1001,17 @@ namespace BahaTurret
 				{
 					if(vessel.atmDensity > 0)
 					{
+                        EffectBehaviour.AddParticleEmitter(gpe.pEmitter);
 						gpe.emit = true;
-						//gpe.pEmitter.worldVelocity = ParticleTurbulence.Turbulence;
-						gpe.pEmitter.worldVelocity = 2*ParticleTurbulence.flareTurbulence;
+                      
+                        //gpe.pEmitter.worldVelocity = ParticleTurbulence.Turbulence;
+                        gpe.pEmitter.worldVelocity = 2*ParticleTurbulence.flareTurbulence;
 					}
 					else
 					{
 						gpe.emit = false;
-					}	
+                        EffectBehaviour.RemoveParticleEmitter(gpe.pEmitter);
+                    }	
 				}
 
 				//thrust
@@ -1063,12 +1056,15 @@ namespace BahaTurret
 			}
 			foreach(var emitter in boostEmitters)
 			{
-				emitter.emit = true;
-			}
+			    EffectBehaviour.AddParticleEmitter(emitter);
+
+                emitter.emit = true;
+            }
 
 			if(hasRCS)
 			{
-				forwardRCS.emit = true;
+                EffectBehaviour.AddParticleEmitter(forwardRCS);
+                forwardRCS.emit = true;
 			}
 
 			if(thrust > 0)
@@ -1085,13 +1081,16 @@ namespace BahaTurret
 			{
 				if(!emitter) continue;
 				emitter.emit = false;
-			}
+                EffectBehaviour.RemoveParticleEmitter(emitter);
+
+            }
 
 			foreach(var emitter in boostGaplessEmitters)
 			{
 				if(!emitter) continue;
 				emitter.emit = false;
-			}
+                EffectBehaviour.RemoveParticleEmitter(emitter.pEmitter);
+            }
 
 			if(decoupleBoosters)
 			{
@@ -1140,14 +1139,16 @@ namespace BahaTurret
 				{
 					if(vessel.atmDensity > 0)
 					{
-						gpe.emit = true;
+                        EffectBehaviour.AddParticleEmitter(gpe.pEmitter);
+                        gpe.emit = true;
 						//gpe.pEmitter.worldVelocity = ParticleTurbulence.Turbulence;
 						gpe.pEmitter.worldVelocity = 2*ParticleTurbulence.flareTurbulence;
 					}
 					else
 					{
 						gpe.emit = false;
-					}	
+                        EffectBehaviour.RemoveParticleEmitter(gpe.pEmitter);
+                    }	
 				}
 
 				if(spoolEngine)
@@ -1182,18 +1183,21 @@ namespace BahaTurret
 
 			foreach(var emitter in pEmitters)
 			{
-				emitter.emit = true;
+                EffectBehaviour.AddParticleEmitter(emitter);
+                emitter.emit = true;
 			}
 
 			foreach(var emitter in gaplessEmitters)
 			{
-				emitter.emit = true;
+                EffectBehaviour.AddParticleEmitter(emitter.pEmitter);
+                emitter.emit = true;
 			}
 
 			if(hasRCS)
 			{
 				forwardRCS.emit = false;
-				audioSource.Stop();
+                EffectBehaviour.RemoveParticleEmitter(forwardRCS);
+                audioSource.Stop();
 			}
 		}
 
@@ -1250,13 +1254,15 @@ namespace BahaTurret
 			{
 				if(!pe) continue;
 				pe.emit = false;
-			}
+                EffectBehaviour.RemoveParticleEmitter(pe);
+            }
 
 			foreach(var gpe in gaplessEmitters)
 			{
 				if(!gpe) continue;
 				gpe.emit = false;
-			}
+                EffectBehaviour.RemoveParticleEmitter(gpe.pEmitter);
+            }
 		}
 
 		[KSPField]
@@ -1376,8 +1382,7 @@ namespace BahaTurret
 				aamTarget = transform.position + (20*vessel.srf_velocity.normalized);
 			}
 
-
-			if(Time.time-TimeFired > dropTime+0.25f)
+            if (TimeIndex > dropTime+0.25f)
 			{
 				DoAero(aamTarget);
 			}
@@ -1412,8 +1417,7 @@ namespace BahaTurret
 			}
 
 			Vector3 agmTarget = MissileGuidance.GetAirToGroundTarget(TargetPosition, vessel, agmDescentRatio);
-
-			DoAero(agmTarget);
+            DoAero(agmTarget);
 		}
 
 		void DoAero(Vector3 targetPosition)
@@ -1430,7 +1434,7 @@ namespace BahaTurret
 				Vector3 dToTarget = TargetPosition - transform.position;
 				Vector3 direction = Quaternion.AngleAxis(Mathf.Clamp(maxOffBoresight * 0.9f, 0, 45f), Vector3.Cross(dToTarget, VectorUtils.GetUpDirection(transform.position))) * dToTarget;
 				agmTarget = transform.position + direction;
-			}
+            }
 
 			DoAero(agmTarget);
 		}
@@ -1680,20 +1684,24 @@ namespace BahaTurret
 					if(Time.time-rcsFiredTimes[i] > rcsAudioMinInterval)
 					{
 						sfAudioSource.PlayOneShot(GameDatabase.Instance.GetAudioClip("BDArmory/Sounds/popThrust"));
-						rcsTransforms[i].emit = true;
+                        EffectBehaviour.AddParticleEmitter(rcsTransforms[i]);
+                        rcsTransforms[i].emit = true;
 						rcsFiredTimes[i] = Time.time;
 					}
 				}
 				else
 				{
+
 					rcsTransforms[i].emit = false;
-				}
+                    EffectBehaviour.RemoveParticleEmitter(rcsTransforms[i]);
+                }
 
 				//turn off emit
 				if(Time.time-rcsFiredTimes[i] > rcsAudioMinInterval*0.75f)
 				{
 					rcsTransforms[i].emit = false;
-				}
+                    EffectBehaviour.RemoveParticleEmitter(rcsTransforms[i]);
+                }
 			}
 
 
@@ -1702,10 +1710,14 @@ namespace BahaTurret
 	    public void KillRCS()
 		{
 			upRCS.emit = false;
-			downRCS.emit = false;
-			leftRCS.emit = false;
-			rightRCS.emit = false;
-		}
+            EffectBehaviour.RemoveParticleEmitter(upRCS);
+            downRCS.emit = false;
+            EffectBehaviour.RemoveParticleEmitter(downRCS);
+            leftRCS.emit = false;
+            EffectBehaviour.RemoveParticleEmitter(leftRCS);
+            rightRCS.emit = false;
+            EffectBehaviour.RemoveParticleEmitter(rightRCS);
+        }
 
 		void OnGUI()
 		{

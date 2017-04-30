@@ -501,6 +501,7 @@ namespace BahaTurret
             foreach (var emitter in part.FindModelComponents<KSPParticleEmitter>())
             {
                 emitter.emit = false;
+                EffectBehaviour.RemoveParticleEmitter(emitter);
             }
 
             if (roundsPerMinute >= 1500)
@@ -1624,7 +1625,7 @@ namespace BahaTurret
                             Vessel hitVessel = null;
                             try
                             {
-                                hitVessel = Part.FromGO(hit.rigidbody.gameObject).vessel;
+                                hitVessel = hit.collider.gameObject.GetComponentInParent<Part>().vessel;
                             }
                             catch (NullReferenceException)
                             {

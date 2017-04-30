@@ -400,7 +400,7 @@ namespace BahaTurret
                         }
                     }
                     else if ((!weaponManager ||
-                              (weaponManager.selectedWeaponString != GetShortName() && !weaponManager.guardMode)))
+                              (weaponManager.selectedWeaponString == GetShortName() && !weaponManager.guardMode)))
                     {
                         if (BDInputUtils.GetKeyDown(BDInputSettingsFields.WEAP_FIRE_KEY) &&
                             (vessel.isActiveVessel || BDArmorySettings.REMOTE_SHOOTING))
@@ -813,11 +813,13 @@ namespace BahaTurret
                 if (FlightGlobals.getStaticPressure(transform.position) == 0 && pe.useWorldSpace)
                 {
                     pe.emit = false;
+                    EffectBehaviour.RemoveParticleEmitter(pe);
                 }
                 else if (pe.useWorldSpace)
                 {
                     BDAGaplessParticleEmitter gpe = pe.gameObject.AddComponent<BDAGaplessParticleEmitter>();
                     gpe.rb = rb;
+                    EffectBehaviour.AddParticleEmitter(gpe.pEmitter);
                     gpe.emit = true;
                 }
             }
@@ -914,6 +916,7 @@ namespace BahaTurret
                         if (pEmitter.maxSize == 0)
                         {
                             pEmitter.emit = false;
+                            EffectBehaviour.RemoveParticleEmitter(pEmitter);
                         }
                     }
                 }
@@ -930,7 +933,7 @@ namespace BahaTurret
                     Part hitPart = null;
                     try
                     {
-                        hitPart = Part.FromGO(hit.rigidbody.gameObject);
+                        hitPart = hit.collider.gameObject.GetComponentInParent<Part>();
                     }
                     catch (NullReferenceException)
                     {

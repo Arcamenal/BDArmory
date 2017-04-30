@@ -997,7 +997,7 @@ namespace BahaTurret
                         if (vesselRadarData && vesselRadarData.locked)
                         {
                             float distanceToTarget = Vector3.Distance(vesselRadarData.lockedTargetData.targetData.predictedPosition, ml.MissileReferenceTransform.position);
-                            BDGUIUtils.DrawTextureOnWorldPos(ml.MissileReferenceTransform.position + (distanceToTarget * ml.MissileReferenceTransform.forward), BDArmorySettings.Instance.dottedLargeGreenCircle, new Vector2(128, 128), 0);
+                            BDGUIUtils.DrawTextureOnWorldPos(ml.MissileReferenceTransform.position + (distanceToTarget * ml.GetForwardTransform()), BDArmorySettings.Instance.dottedLargeGreenCircle, new Vector2(128, 128), 0);
                             //Vector3 fireSolution = MissileGuidance.GetAirToAirFireSolution(CurrentMissile, radar.lockedTarget.predictedPosition, radar.lockedTarget.velocity);
                             Vector3 fireSolution = MissileGuidance.GetAirToAirFireSolution(ml, vesselRadarData.lockedTargetData.targetData.predictedPosition, vesselRadarData.lockedTargetData.targetData.velocity);
                             Vector3 fsDirection = (fireSolution - ml.MissileReferenceTransform.position).normalized;
@@ -1578,33 +1578,19 @@ namespace BahaTurret
         IEnumerator MissileAwayRoutine(MissileBase ml)
         {
             missilesAway++;
-            float missileThrustTime = 100;
+            float missileThrustTime = 300;
 
             var launcher = ml as MissileLauncher;
             if (launcher != null)
             {
                 missileThrustTime = launcher.dropTime + launcher.cruiseTime + launcher.boostTime;
             }
-            else
-            {
-                //TODO BDModularGuidance: Calculate Thrust Time or new field
-            }
+
             float timeStart = Time.time;
             float timeLimit = Mathf.Max(missileThrustTime + 4, 10);
             while (ml)
             {
-                if (launcher != null)
-                {
-                    if (launcher.guidanceActive && Time.time - timeStart < timeLimit)
-                    {
-                        yield return null;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                else if (Time.time - timeStart < timeLimit)
+                if (ml.guidanceActive && Time.time - timeStart < timeLimit)
                 {
                     yield return null;
                 }
@@ -2892,7 +2878,7 @@ namespace BahaTurret
                         : -ml.MissileReferenceTransform.transform.up) * launcher.decoupleSpeed * time) +
                                         ((FlightGlobals.getGeeForceAtPosition(transform.position) - vessel.acceleration) *
                                          0.5f * time * time);
-                    Vector3 crossAxis = Vector3.Cross(direction, ml.MissileReferenceTransform.forward).normalized;
+                    Vector3 crossAxis = Vector3.Cross(direction, ml.GetForwardTransform()).normalized;
 
                     float rayDistance;
                     if (launcher.thrust == 0 || launcher.cruiseThrust == 0)
@@ -2936,7 +2922,7 @@ namespace BahaTurret
                     return true;
                 }
                 //forward check for no-drop missiles
-                if (Physics.Raycast(new Ray(ml.MissileReferenceTransform.position, ml.MissileReferenceTransform.forward), 50, 557057))
+                if (Physics.Raycast(new Ray(ml.MissileReferenceTransform.position, ml.GetForwardTransform()), 50, 557057))
                 {
                     return false;
                 }
@@ -3138,7 +3124,8 @@ namespace BahaTurret
                         if (ml.GuidanceMode == MissileBase.GuidanceModes.AGM
                            || ml.GuidanceMode == MissileBase.GuidanceModes.BeamRiding
                            || ml.GuidanceMode == MissileBase.GuidanceModes.STS
-                           || ml.GuidanceMode == MissileBase.GuidanceModes.Cruise)
+                           || ml.GuidanceMode == MissileBase.GuidanceModes.Cruise
+                           || ml.GuidanceMode == MissileBase.GuidanceModes.AGMBallistic)
                         {
                             if (!BDArmorySettings.ALLOW_LEGACY_TARGETING && ml.TargetingMode == MissileBase.TargetingModes.AntiRad)
                             {
@@ -3510,7 +3497,7 @@ namespace BahaTurret
             float distance = Vector3.Distance(transform.position + vessel.srf_velocity,
                 target.position + target.velocity); //take velocity into account (test)
 
-            Debug.Log("[BDArmory]: " + vessel.vesselName + " SmartPickWeapon: dist=" + distance + ", turretRange=" + turretRange + ", targetMissile=" + target.isMissile);
+            //Debug.Log("[BDArmory]: " + vessel.vesselName + " SmartPickWeapon: dist=" + distance + ", turretRange=" + turretRange + ", targetMissile=" + target.isMissile);
 
             if (distance < turretRange || (target.isMissile && distance < turretRange * 1.5f))
             {
